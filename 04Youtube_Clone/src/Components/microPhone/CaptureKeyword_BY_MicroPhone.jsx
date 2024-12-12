@@ -1,22 +1,39 @@
 import { ImCross } from "react-icons/im";
 import { HiMicrophone } from "react-icons/hi2";
-import { useContext, useEffect, useReducer, useRef, useState } from "react";
-import hamburgerContext from "../../context/HamburgerContext";
-import microphoneAudio from "../../../assets/VoiceBackgroundAudio.mp3"
+import { useEffect, useRef, useState } from "react";
+import { useSearchVideoByKeyword } from "../../youtube_backend_logic/custom_hook/useSearchVideoByKeyword";
+import { useDispatch } from "react-redux";
+import { updateNavbarSearchBoxValue } from "../../features/navbar/navbarSearchBoxSlice";
+// import hamburgerContext from "../../context/HamburgerContext";
+// import microphoneAudio from "../../../assets/VoiceBackgroundAudio.mp3"
+// import navbarContext from "../../context/NavbarContext";
 
-const playVoiceBgAudio = () => {
-  const voiceClickAudio = new Audio(microphoneAudio);
-  voiceClickAudio.volume = 1.0;
-  voiceClickAudio.play()
-}
+
+
+// const playVoiceBgAudio = () => {
+//   const voiceClickAudio = new Audio(microphoneAudio);
+//   voiceClickAudio.volume = 1.0;
+//   voiceClickAudio.play()
+// }
 
 
 
 function CaptureKeyword_BY_MicroPhone({ setIsVoiceSearchEnabled }) {
-  const { navbarSearchBoxvalue, setNavbarSearchBoxValue } = useContext(hamburgerContext)
+  // const { setNavbarSearchBoxValue } = useContext(navbarContext);
+
+  // updateNavbarSearchBoxValue
+
+  const dispatch = useDispatch();
+  const searchVideoByKeyword = useSearchVideoByKeyword();
+
+
+
+
+  const [tempVoiceValue , setTempVoiceValue] = useState("")
   const [isListening, setIsListening] = useState(true);
   const userSpokeRef = useRef(false);
-  const [voiceRecognitionObj, setVoiceRecognitionObj] = useState(("SpeechRecognition" in window || "webkitSpeechRecognition" in window) ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null);
+  let vioceObj = ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) ? new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null
+  const [voiceRecognitionObj, setVoiceRecognitionObj] = useState(vioceObj);
   const timeFixRef_forVoiceRecognition = useRef(null);
 
   const stopVoiceRecognition = () => {
@@ -27,7 +44,6 @@ function CaptureKeyword_BY_MicroPhone({ setIsVoiceSearchEnabled }) {
 
   // Toggle animation on microphone click
   const handleMicrophoneClick = () => {
-    playVoiceBgAudio();
     let isUserWantToSpeak = !isListening;
 
     setIsListening(isUserWantToSpeak);
@@ -55,7 +71,9 @@ function CaptureKeyword_BY_MicroPhone({ setIsVoiceSearchEnabled }) {
     voiceRecognitionObj.onresult = (event) => {
       userSpokeRef.current = true;
       const userVoiceTranscript = event.results[0][0].transcript;
-      setNavbarSearchBoxValue(userVoiceTranscript || "Error Occured");
+      setTempVoiceValue(userVoiceTranscript || "Error Occured")
+      dispatch(updateNavbarSearchBoxValue({search_query : userVoiceTranscript || "Error Occured"}))
+      
       setTimeout(() => {
         setIsVoiceSearchEnabled(false)
       }, 3000);
@@ -74,14 +92,17 @@ function CaptureKeyword_BY_MicroPhone({ setIsVoiceSearchEnabled }) {
     }
   }
 
-
+  useEffect(() => {
+    if(tempVoiceValue === "") {
+      return ; 
+    }
+    searchVideoByKeyword({keyword : tempVoiceValue  , replaceFlag : true});
+  } , [tempVoiceValue]);
 
   useEffect(() => {
     startVoiceRecognition();
-    setTimeout(() => {
-      playVoiceBgAudio();
-    }, 1000);
   }, [])
+
 
   return (
     <div className="bg-black/20  fixed top-10 left-0 w-full h-full">
@@ -90,7 +111,6 @@ function CaptureKeyword_BY_MicroPhone({ setIsVoiceSearchEnabled }) {
         className="relative w-[50%] h-[70%] m-auto top-4  p-10 shadow-2xl rounded-md text-start z-[200] bg-[#212121] text-white"
       >
         <button onClick={() => {
-          playVoiceBgAudio();
           stopVoiceRecognition();
           setIsVoiceSearchEnabled(prev => !prev);
         }} className="absolute right-10 text-sm hover:bg-gray-700 hover:rounded-full p-3">
@@ -99,7 +119,7 @@ function CaptureKeyword_BY_MicroPhone({ setIsVoiceSearchEnabled }) {
 
 
         <p className="text-2xl font-semibold tracking-wide py-10">
-          {isListening === true ? (navbarSearchBoxvalue !== "") ? navbarSearchBoxvalue : "Listening ....." : "Didn't hear that. Try again."}
+          {isListening === true ? ( tempVoiceValue !== "" ? tempVoiceValue : "Listening .....") : "Didn't hear that. Try again."}
         </p>
 
         {/* Animated scaling div */}
@@ -123,7 +143,6 @@ function CaptureKeyword_BY_MicroPhone({ setIsVoiceSearchEnabled }) {
 
         {isListening === false && <p style={{ left: "50%", transform: "translate(-50%)" }} className="absolute bottom-10 font-thin text-gray-300 text-center">Tap the microphone  to try again</p>}
 
-        <button onClick={() => console.log('click to print = ', voiceRecognitionObj)}>click to print voice obj</button>
       </div>
     </div>
   );
@@ -133,32 +152,3 @@ export default CaptureKeyword_BY_MicroPhone;
 
 
 
-
-/* 
-  step 1 - user click on navabr microphone
-  step 2 - {
-    -> user speak , time out
-    -> don't speak , time out
-    -> user manually click pause
-    -> again user speak 
-    -> don't speak
-    -> show transcript in listing mode
-  } 
-
-  step 3 -> {
-    -> transcript ready
-    -> userSpoke === false
-    -> unExpected error
-  }
-
-  developer mode 
-  -------------
-  step 4 -> {
-    -> music play
-    -> pop box off
-    -> show data in searchBox
-    -> api call
-  }
-
-
-*/

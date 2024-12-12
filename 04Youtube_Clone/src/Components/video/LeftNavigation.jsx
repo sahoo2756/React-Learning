@@ -2,21 +2,21 @@ import { IoHome } from "react-icons/io5";
 import { SiYoutubeshorts } from "react-icons/si";
 import { MdSubscriptions } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
-import { useContext, useState } from "react";
+// import { useContext, useState } from "react";
 
 
 const MinimalLeftNavigation = () => {
 
-  const defaultIconcss = "text-2xl"
-  const defaultIconParameterCss = "text-sm font-thin"
-  document.documentElement.style.setProperty('--leftNavigation_width', '7%');
+  const defaultIconcss = "text-xl"
+  const defaultIconParameterCss = "text-xs font-no"
+  document.documentElement.style.setProperty('--leftNavigation_width', '5%');
 
 
   const Element = ({ icon, iconName }) => {
     return (
-      <div className="hover:bg-white/10 rounded-lg py-2 text-center">
+      <div className="hover:bg-white/10 rounded-lg py-2 text-center cursor-pointer">
         <button className={`${defaultIconcss}`}>{icon}</button>
-        <p className={`${defaultIconParameterCss}`}>{iconName}</p>
+        <p className={`${defaultIconParameterCss} font-normal`}>{iconName}</p>
       </div>
     )
   }
@@ -27,9 +27,8 @@ const MinimalLeftNavigation = () => {
         height: "calc(100vh - var(--navbar-height))",
         top: "var(--navbar-height)",
         width : "var(--leftNavigation_width)"
-        
       }}
-      className='sticky left-0  h-full text-left box-border pt-5  px-3 flex flex-col gap-y-10'
+      className='sticky left-0  h-full text-left box-border pt-5 px-1 flex flex-col gap-y-10'
     >
 
       <Element icon={<IoHome />} iconName={"Home"} />
@@ -61,12 +60,12 @@ const ExpandLeftNavigation = () => {
   document.documentElement.style.setProperty('--leftNavigation_width', '15%');
 
 
-  const defaultIconcss = "text-xl"
+  const defaultIconcss = "text-lg"
   const defaultIconParameterCss = "text-md "
 
   const Element = ( { icon , iconName } ) => {
     return (
-      <div className="hover:bg-white/10 rounded-lg cursor-pointer py-3 px-3 flex items-center gap-x-5  text-center">
+      <div className="hover:bg-white/10 border rounded-lg cursor-pointer py-3 px-3 flex items-center gap-x-5  text-center">
         <button className={`${defaultIconcss}`}>{icon}</button>
         <p className={`${defaultIconParameterCss} text-nowrap`}>{iconName}</p>
       </div>
@@ -115,16 +114,17 @@ const ExpandLeftNavigation = () => {
   )
 }
 
-import hamburgerContext from "../../context/HamburgerContext.jsx";
+// import hamburgerContext from "../../context/HamburgerContext.jsx";
+import { useSelector } from "react-redux";
 function LeftNavigation() {
-
-  const {hamburgerIconClick} = useContext(hamburgerContext);
-
+  
+  // const {hamburgerIconClick} = useContext(hamburgerContext);
+  const isHamburgerIconClicked = useSelector(state => state?.humburger?.isHamburgerIconClicked)
 
   return (
     <>
       {
-        (hamburgerIconClick === true) ? <ExpandLeftNavigation /> : <MinimalLeftNavigation />
+        (isHamburgerIconClicked === true) ? <ExpandLeftNavigation /> : <MinimalLeftNavigation />
       }
     </>
   )

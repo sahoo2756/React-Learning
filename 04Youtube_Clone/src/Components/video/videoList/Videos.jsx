@@ -1,86 +1,88 @@
-import React from 'react';
-
-
-const SingleVideoWithMetaData = ({thumbnail , channelLogo }) => {
-    return (
-        <div className='w-[30%] cursor-pointer'>
-            {/* Thumbnails & video duration */}
-            <div className='relative rounded-md shadow-2xl'>
-                <img
-                    src={thumbnail}
-                    className='relative w-[100%] rounded-lg shadow-2xl'
-                    alt="Video thumbnail"
-                />
-                <span
-                    style={{ userSelect: 'none' }}
-                    className='absolute bottom-3 right-3 bg-gray-800 p-1 rounded-md shadow-lg'
-                >
-                    1:02:59
-                </span>
-            </div>
-
-            {/* Video meta data */}
-            <div className='flex mt-3'>
-                <div
-                    style={{ userSelect: 'none', pointerEvents: 'none' }}
-                    className='w-[15%]'>
-                    <img
-                        src={channelLogo}
-                        className='rounded-full'
-                        alt="Channel logo"
-                    />
-                </div>
-
-                <div className='ml-3 text-wrap w-full'>
-                    <p
-                        className='max-h-16 mb-2 overflow-hidden text-ellipsis line-clamp-1 cursor-pointer caret-slate-950 text-lg'
-                        style={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                        }}
-                    >
-                        Live | Syraputra Karna | Lorem ipsum dolor sit amet | Lorem, ipsum. | Lorem ipsum dolor sit amet.
-                    </p>
-
-                    <p
-                        id="channel-name"
-                        className='cursor-pointer mb-1 caret-gray-700 text-slate-400 text-md'>
-                        Sur Tv Myhto
-                    </p>
-                    <p className='cursor-pointer caret-gray-700 text-slate-400 text-md'>
-                        <span id="views">15M views</span> ,
-                        <span id="video-upload-time">7 months ago</span>
-                    </p>
-                </div>
-            </div>
-        </div>
-    )
-}
+import { useEffect, useRef } from "react";
+import { useSearchVideoByKeyword } from "../../../youtube_backend_logic/custom_hook/useSearchVideoByKeyword";
+import LoderGif from "../../../../assets/loader.gif";
+import { useSelector } from "react-redux";
+import MachineOfflineComp from "./utils.jsx/MachineOfflineComp";
+import LoadYoutubeMedia from "./utils.jsx/LoadYoutubeMedia";
 
 
 function Videos() {
-    let tempUrl = `https://i.ytimg.com/vi/RTePBZUrIBU/hqdefault.jpg?v=66f955a7&sqp=CLjYybgG-oaymwEcCOADEI4CSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBV4xPu0FUZcDn0vvGzD-V5ZjVwxA`;
-    let channelLogo = `https://yt3.ggpht.com/TROQlM_ILGeDg6tXVgbsGoSLusZFCEYNubmKK4u4ORiy-KOgxmJ0CJNx6gNnq0lfPRfw_KgEhg=s68-c-k-c0x00ffffff-no-rj`;
+  const searchVideoByKeyword = useSearchVideoByKeyword();
 
-    return (
-        <div id="parent" className='w-fit flex flex-wrap  gap-y-10 justify-between '>
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-             <SingleVideoWithMetaData thumbnail={tempUrl} channelLogo={channelLogo} />
-        </div>
-    );
+  const isClientMachineOnline = useSelector(
+    (state) => state.machineInternetInfo?.isMachineOnline
+  );
+  const navbarSearchBoxValue = useSelector(
+    (state) => state?.navbarSearchBox?.navbarSearchBoxValue
+  );
+
+  const youtubeMedias = useSelector(
+    (state) => state?.videoCollection?.youtubeMedias || []
+  );
+  const { videoCollectionArray, shortsCollectionArray } = youtubeMedias
+  const totalMediaLength = videoCollectionArray.length + shortsCollectionArray.length
+
+  // const isErrorDuringVideoFetching = useSelector(
+  //   (state) => state.problemOnApp?.isErrorDuringVideoFetching
+  // );
+
+  const isVideoFetchingAllow_Ref = useRef(null)
+
+  useEffect(() => {
+    // Scroll To Top
+    function scrollToTop() {
+      let topLength =
+        (document.documentElement.scrollHeight + window.innerHeight) / 2;
+      window.scrollTo({ top: topLength, behavior: "smooth" });
+    }
+
+    const handleScroll = async () => {
+      const windowHeight = window.innerHeight;
+      const scrollTop = document.documentElement.scrollTop;
+      const documentEleHeight = document.documentElement.scrollHeight;
+
+      // (scrollTop + windowHeight) should is bigger than documentEleHeight then only allow to make api call for more videos
+      if (isVideoFetchingAllow_Ref.current === false || (scrollTop + windowHeight + 20 < documentEleHeight)) {
+        return;
+      }
+
+      isVideoFetchingAllow_Ref.current = false;
+      // isVideoFetchingAllow_Ref.current = true; is set after the file fully mounts. This is why the code is placed inside useEffect, as shown below
+      console.log('keywordmanas = ', navbarSearchBoxValue)
+      await searchVideoByKeyword({
+        keyword: navbarSearchBoxValue,
+        replaceFlag: false,
+      });
+      setTimeout(() => {
+        scrollToTop();
+      }, 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [navbarSearchBoxValue, isVideoFetchingAllow_Ref]);
+
+  useEffect(() => {
+    // isVideoFetchingAllow_Ref.current = true, is in useEffect to enable API requests only after all videos render successfully.
+    isVideoFetchingAllow_Ref.current = true;
+  }, [videoCollectionArray]);
+
+
+
+  return (
+
+    <div className="w-full">
+      <LoadYoutubeMedia />
+
+      {totalMediaLength > 0 && totalMediaLength < 150 && (
+        <img src={LoderGif} className="w-8 pb-5 m-auto" />
+      )}
+    </div>
+
+  );
 }
 
 export default Videos;

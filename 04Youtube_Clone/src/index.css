@@ -1,6 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body{
+  background-color: #0F0F0F;
+  color: #fff;
+}
 
 input {
   outline: none;
@@ -9,6 +15,20 @@ input {
 
 input[type="search"]::-webkit-search-cancel-button {
   display: none;
+}
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield; /* For Firefox */
+}
+
+input[type="checkbox"]{
+  width: 30px; /*Desired width*/
+  /* height: 30px; Desired height */
 }
 
 :root {

@@ -15,9 +15,15 @@ export default {
       animation: {
         'pulse-bg': 'pulseBg 2s ease-in-out infinite',  // Pulsing animation
       },
+      fontFamily: {
+        lato: ['Lato', 'sans-serif'],
+        montserrat: ['Montserrat', 'sans-serif'],
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    
+  ],
 }
 
 

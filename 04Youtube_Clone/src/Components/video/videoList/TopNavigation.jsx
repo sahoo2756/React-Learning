@@ -1,19 +1,33 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import  { useSearchVideoByKeyword } from "../../../youtube_backend_logic/custom_hook/useSearchVideoByKeyword.js";
+import { useDispatch } from "react-redux";
+import { updateNavbarSearchBoxValue } from "../../../features/navbar/navbarSearchBoxSlice.js";
+// import navbarContext from "../../../context/NavbarContext";
+// import videoListContext from "../../../context/videoListContext";
 
 const paddingY = "py-1";
 
 function  TopNavigation() {
+  const searchVideoByKeyword = useSearchVideoByKeyword();
+  const dispatch = useDispatch();
+  // const { navbarSearchBoxvalue, setNavbarSearchBoxValue } = useContext(navbarContext);
+  // console.log('setNavbarSearchBoxValue = ', setNavbarSearchBoxValue)
 
   const ScrollableButton = ({ label }) => {
-    console.log('ScrollableButton')
     return (
-      <button className={`text-sm text-nowrap shadow-2xl rounded-md px-3 ${paddingY} bg-gray-700`}>
+      <button onClick={() => {
+        (`${label} clicked`)
+        // setNavbarSearchBoxValue(label);
+        dispatch(updateNavbarSearchBoxValue({search_query : label}))
+        searchVideoByKeyword({keyword : label , replaceFlag : true})
+      }} className={`text-sm text-nowrap shadow-2xl rounded-md px-3 ${paddingY} bg-gray-700`}>
         {label}
       </button>
     );
   };
 
+  // this data will differ from user to user and will come from backend depend upon user hostory
   const buttonLabels = [
     "All", "Music", "StoryTelling", "Mythology", "Karna", "South Hindi Movie", "News", "Podcast", 
     "Live", "Drama", "Apis", "Mantras", "Animated Films", "Recently Uploaded", "Watched", 
@@ -93,7 +107,7 @@ function  TopNavigation() {
 
       {/* Scrollable buttons */}
       {buttonLabels.map((label, index) => (
-        <ScrollableButton key={index} label={label} />
+        <ScrollableButton  key={index} label={label} />
       ))}
 
       {/* Right scroll button */}
